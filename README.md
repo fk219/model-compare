@@ -5,6 +5,8 @@ Two language models answer the same prompt. A third model judges both answers, s
 **Live app:** https://ai-battle-arena.furqankhan.dev
 **API:** https://ai-battle-arena-4jxh.onrender.com
 
+![AI Battle Arena](docs/preview.png)
+
 ![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)
 ![Node](https://img.shields.io/badge/Node.js-22-5FA04E?logo=node.js&logoColor=white)
