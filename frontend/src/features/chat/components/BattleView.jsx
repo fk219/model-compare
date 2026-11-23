@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from "react"
-import { formatBattleDate, formatScore, getBattleDate } from "../lib/battles"
+import {
+  formatBattleDate,
+  formatScore,
+  getBattleDate,
+  getCornerFeedback,
+  getVerdictLine,
+} from "../lib/battles"
+import { downloadBattleReport } from "../lib/report"
+import { createShareUrl, ShareError } from "../lib/share"
 import { AnswerContent } from "./AnswerContent.jsx"
 
 const CopyIcon = ({ copied }) => (
@@ -37,6 +45,34 @@ const CopyIcon = ({ copied }) => (
   </svg>
 )
 
+const ShareIcon = () => (
+  <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+    <circle cx="4" cy="8" r="1.7" fill="none" stroke="currentColor" strokeWidth="1.3" />
+    <circle cx="12" cy="3.5" r="1.7" fill="none" stroke="currentColor" strokeWidth="1.3" />
+    <circle cx="12" cy="12.5" r="1.7" fill="none" stroke="currentColor" strokeWidth="1.3" />
+    <path
+      d="M5.5 7.2l5-2.7M5.5 8.8l5 2.7"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+    />
+  </svg>
+)
+
+const DownloadIcon = () => (
+  <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+    <path
+      d="M8 2v7.5M5 7l3 3 3-3M3 12.5h10"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+)
+
 const copyToClipboard = async (text) => {
   try {
     if (!navigator.clipboard?.writeText) throw new Error("Clipboard API unavailable")
@@ -62,10 +98,15 @@ const copyToClipboard = async (text) => {
 
 const BattleView = ({ chat, boutNumber, isFresh }) => {
   const [copiedKey, setCopiedKey] = useState(null)
+  const [shareStatus, setShareStatus] = useState(null)
   const copyTimerRef = useRef(null)
+  const shareTimerRef = useRef(null)
 
   useEffect(() => {
-    return () => window.clearTimeout(copyTimerRef.current)
+    return () => {
+      window.clearTimeout(copyTimerRef.current)
+      window.clearTimeout(shareTimerRef.current)
+    }
   }, [])
 
   const handleCopy = async (key, text) => {
@@ -76,6 +117,45 @@ const BattleView = ({ chat, boutNumber, isFresh }) => {
       copyTimerRef.current = window.setTimeout(() => setCopiedKey(null), 2000)
     } catch {
       setCopiedKey(null)
+    }
+  }
+
+  const pushShareStatus = (tone, message) => {
+    setShareStatus({ tone, message })
+    window.clearTimeout(shareTimerRef.current)
+    shareTimerRef.current = window.setTimeout(() => setShareStatus(null), 6000)
+  }
+
+  const handleShare = async () => {
+    try {
+      const url = createShareUrl(chat)
+      window.history.replaceState(null, "", url)
+
+      try {
+        await copyToClipboard(url)
+        pushShareStatus("success", "Share link copied. The report is also in the address bar.")
+      } catch {
+        pushShareStatus(
+          "error",
+          "The report link is in the address bar, but copying it failed. Copy it from there.",
+        )
+      }
+    } catch (error) {
+      pushShareStatus(
+        "error",
+        error instanceof ShareError
+          ? error.message
+          : "The report couldn't be shared as a link. Use Export report instead.",
+      )
+    }
+  }
+
+  const handleExport = () => {
+    try {
+      const filename = downloadBattleReport(chat)
+      pushShareStatus("success", `Downloaded ${filename}.`)
+    } catch {
+      pushShareStatus("error", "The report couldn't be exported. Try again.")
     }
   }
 
@@ -108,6 +188,10 @@ const BattleView = ({ chat, boutNumber, isFresh }) => {
   const isTie = winner !== "solution_1" && winner !== "solution_2"
   const winnerLabel =
     winner === "solution_1" ? "Cohere wins" : winner === "solution_2" ? "Groq wins" : "Draw"
+  const verdictLine = getVerdictLine(judge)
+  const cohereFeedback = getCornerFeedback(judge, "solution_1")
+  const groqFeedback = getCornerFeedback(judge, "solution_2")
+  const hasEvidence = Boolean(cohereFeedback || groqFeedback)
 
   const corners = [
     {
@@ -189,8 +273,27 @@ const BattleView = ({ chat, boutNumber, isFresh }) => {
             {formatBattleDate(battleDate)}
           </time>
         </p>
-        <span className="bout__tag">Final</span>
+
+        <div className="bout__tools">
+          <div className="bout__actions">
+            <button type="button" className="report-btn" onClick={handleShare}>
+              <ShareIcon />
+              <span>Share report</span>
+            </button>
+            <button type="button" className="report-btn" onClick={handleExport}>
+              <DownloadIcon />
+              <span>Export report</span>
+            </button>
+          </div>
+          <span className="bout__tag">Final</span>
+        </div>
       </header>
+
+      {shareStatus ? (
+        <p className={`bout__notice bout__notice--${shareStatus.tone}`} role="status" aria-live="polite">
+          {shareStatus.message}
+        </p>
+      ) : null}
 
       <section className="prompt-card" aria-labelledby={`prompt-${chat.id}`}>
         <h2 id={`prompt-${chat.id}`} className="prompt-card__label">
@@ -238,6 +341,30 @@ const BattleView = ({ chat, boutNumber, isFresh }) => {
               </span>
             </div>
           </div>
+
+          {verdictLine ? (
+            <p className="verdict-reason">
+              <span className="verdict-reason__label">{verdictLine.label}</span>
+              <span className="verdict-reason__text">{verdictLine.text}</span>
+            </p>
+          ) : null}
+
+          {hasEvidence ? (
+            <div className="scorecard__notes" role="group" aria-label="Judge reasoning">
+              <div className="scorecard__note scorecard__note--red">
+                <p className="scorecard__note-label">Judge on Cohere</p>
+                <p className="scorecard__note-text">
+                  {cohereFeedback || "No reasoning was returned for this corner."}
+                </p>
+              </div>
+              <div className="scorecard__note scorecard__note--blue">
+                <p className="scorecard__note-label">Judge on Groq</p>
+                <p className="scorecard__note-text">
+                  {groqFeedback || "No reasoning was returned for this corner."}
+                </p>
+              </div>
+            </div>
+          ) : null}
         </section>
 
         <div className="duel">

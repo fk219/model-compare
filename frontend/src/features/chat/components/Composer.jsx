@@ -1,4 +1,5 @@
 import { useEffect } from "react"
+import { MAX_PROMPT_LENGTH } from "../lib/limits"
 
 const SendIcon = () => (
   <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false">
@@ -35,6 +36,8 @@ const Composer = ({
     event.preventDefault()
     onSubmit()
   }
+
+  const nearLimit = value.length >= 1600
 
   return (
     <footer className="composer">
@@ -83,6 +86,7 @@ const Composer = ({
             onKeyDown={handleKeyDown}
             placeholder="Type a problem."
             className="composer__input"
+            maxLength={MAX_PROMPT_LENGTH}
             aria-describedby="composer-hint"
           />
           <button
@@ -97,7 +101,15 @@ const Composer = ({
         </form>
 
         <p className="composer__hint" id="composer-hint">
-          <span>Enter to send · Shift + Enter for a new line</span>
+          <span>
+            Enter to send · Shift + Enter for a new line
+            {nearLimit ? (
+              <span className={`composer__count${value.length >= 1900 ? " is-near" : ""}`}>
+                {" "}
+                · {value.length.toLocaleString("en-US")}/{MAX_PROMPT_LENGTH.toLocaleString("en-US")}
+              </span>
+            ) : null}
+          </span>
           <span className="composer__note">Bouts stay on this device</span>
         </p>
       </div>

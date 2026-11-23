@@ -17,7 +17,30 @@ const state = new StateSchema({
     winner: z.string().default(""),
 })
 
-const solutionNode = async (state) => {
+type BattleState = {
+    problem: string
+    solution_1: string
+    solution_2: string
+    solution_1_score: number
+    solution_2_score: number
+    solution_1_feedback: string
+    solution_2_feedback: string
+    winner: string
+}
+
+export type BattleResult = {
+    solution_1: string
+    solution_2: string
+    judge: {
+        solution_1_score: number
+        solution_2_score: number
+        solution_1_feedback: string
+        solution_2_feedback: string
+        winner: string
+    }
+}
+
+const solutionNode = async (state: BattleState) => {
     const [cohereResponse, groqResponse] = await Promise.all([
         cohereModel.invoke(state.problem),
         groqModel.invoke(state.problem),
@@ -29,7 +52,7 @@ const solutionNode = async (state) => {
     }
 }
 
-const judgeNode = async (state) => {
+const judgeNode = async (state: BattleState) => {
     const { problem, solution_1, solution_2 } = state
 
     // NOTE: Groq is both a fighter AND the judge (its free tier is the most generous).
@@ -87,7 +110,7 @@ const graph = new StateGraph(state)
     .compile()
 
 
-export default async function startGraph(problem: string) {
+export default async function startGraph(problem: string): Promise<BattleResult> {
     const response = await graph.invoke({
         problem: problem
     })

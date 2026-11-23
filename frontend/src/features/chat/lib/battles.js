@@ -1,3 +1,5 @@
+import { compactText } from "./text"
+
 const STORAGE_KEY = "ai-battle-arena:fight-card:v1"
 
 const isStoredBattle = (battle) =>
@@ -70,6 +72,66 @@ export const formatScore = (score) => {
   return String(score)
 }
 
+const readableScore = (score) => {
+  const numeric = Number(score)
+  return Number.isFinite(numeric) ? `${numeric}/10` : null
+}
+
+/**
+ * Compact, evidence-based verdict line. The reason is always lifted from the
+ * judge's own feedback; scores are only used when feedback is missing.
+ */
+export const getVerdictLine = (judge) => {
+  if (!judge) return null
+
+  const winner = judge.winner
+  const cohereScore = readableScore(judge.solution_1_score)
+  const groqScore = readableScore(judge.solution_2_score)
+
+  if (winner !== "solution_1" && winner !== "solution_2") {
+    const cohereNumeric = Number(judge.solution_1_score)
+    const groqNumeric = Number(judge.solution_2_score)
+    const hasScores = Number.isFinite(cohereNumeric) && Number.isFinite(groqNumeric)
+
+    return {
+      label: "Why it was a draw",
+      text: hasScores
+        ? cohereNumeric === groqNumeric
+          ? `Both corners scored ${cohereScore}.`
+          : `The judge called it level at ${cohereScore}–${groqScore}.`
+        : "The judge called it level.",
+    }
+  }
+
+  const isCohere = winner === "solution_1"
+  const feedback = isCohere ? judge.solution_1_feedback : judge.solution_2_feedback
+  const reason = compactText(feedback, 240)
+
+  if (reason) {
+    return {
+      label: isCohere ? "Why Cohere won" : "Why Groq won",
+      text: reason,
+    }
+  }
+
+  const winnerName = isCohere ? "Cohere" : "Groq"
+  const winnerScore = isCohere ? cohereScore : groqScore
+  const loserScore = isCohere ? groqScore : cohereScore
+
+  return {
+    label: `Why ${winnerName} won`,
+    text:
+      winnerScore && loserScore
+        ? `${winnerName} scored ${winnerScore} to the other corner's ${loserScore}.`
+        : `The judge awarded ${winnerName} the bout.`,
+  }
+}
+
+export const getCornerFeedback = (judge, solutionKey) => {
+  const value = judge?.[`${solutionKey}_feedback`]
+  return typeof value === "string" ? value.trim() : ""
+}
+
 export const parseAnswer = (text) => {
   const source = typeof text === "string" ? text : ""
   const parts = []
@@ -94,8 +156,23 @@ export const parseAnswer = (text) => {
 
 export const describeBattleError = (error) => {
   const status = error?.response?.status
+  const payload = error?.response?.data
 
-  if (status === 429) return "The arena is rate-limited. Wait a minute, then try again."
+  if (status === 429) {
+    const retryAfter = Number(payload?.retryAfter)
+    const wait = Number.isFinite(retryAfter) && retryAfter > 0 ? `${Math.ceil(retryAfter)}s` : "a moment"
+
+    return `Arena is at capacity. Try again in ${wait}.`
+  }
+
+  if (status === 504) {
+    return "The bout timed out. The judge took too long, so try again."
+  }
+
+  if (status === 400 && typeof payload?.error === "string" && payload.error.trim()) {
+    return payload.error
+  }
+
   if (status >= 500) return "The arena server hit a snag. Try again in a moment."
   if (!error?.response) return "Couldn't reach the arena. Check your connection and try again."
   return "The battle couldn't start. Try again."

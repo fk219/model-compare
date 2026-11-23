@@ -6,11 +6,14 @@ import {
   loadFightCard,
   saveFightCard,
 } from "../lib/battles"
+import { MAX_PROMPT_LENGTH } from "../lib/limits"
+import { clearShareHash, readSharedReport } from "../lib/share"
 import { BattleView } from "../components/BattleView.jsx"
 import { Composer } from "../components/Composer.jsx"
 import { EmptyState } from "../components/EmptyState.jsx"
 import { FightCard } from "../components/FightCard.jsx"
 import { LiveBout } from "../components/LiveBout.jsx"
+import { SharedReportPage } from "./SharedReportPage.jsx"
 
 const MenuIcon = () => (
   <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false">
@@ -24,7 +27,7 @@ const MenuIcon = () => (
   </svg>
 )
 
-const ChatPage = () => {
+const ArenaPage = () => {
   // ----- 1. STATE ------------------------------------------------
   // All state lives here at the top. Nothing is duplicated in children.
   const [savedCard] = useState(loadFightCard)
@@ -59,6 +62,7 @@ const ChatPage = () => {
   }
 
   const selectChat = (id) => {
+    clearShareHash()
     setActiveChatId(id)
     setFreshBattleId(null)
     setError(null)
@@ -66,6 +70,7 @@ const ChatPage = () => {
   }
 
   const startNewChat = () => {
+    clearShareHash()
     setActiveChatId(null)
     setFreshBattleId(null)
     setError(null)
@@ -76,6 +81,12 @@ const ChatPage = () => {
     const problem = inputValue.trim()
     if (!problem || loading) return
 
+    if (problem.length > MAX_PROMPT_LENGTH) {
+      setError(`Prompts are capped at ${MAX_PROMPT_LENGTH.toLocaleString("en-US")} characters. Trim it down and try again.`)
+      return
+    }
+
+    clearShareHash()
     setError(null)
     setPendingProblem(problem)
 
@@ -189,9 +200,15 @@ const ChatPage = () => {
             </button>
 
             <div className="marquee__masthead">
-              <span className="marquee__live">
-                <span className="live-dot" aria-hidden="true" />
-                Live
+              <span className={`marquee__live${loading ? " is-live" : ""}`}>
+                {loading ? (
+                  <>
+                    <span className="live-dot" aria-hidden="true" />
+                    Battle in progress
+                  </>
+                ) : (
+                  "Model vs model"
+                )}
               </span>
               <h1 className="wordmark">
                 AI Battle <span className="wordmark__hollow">Arena</span>
@@ -241,6 +258,28 @@ const ChatPage = () => {
       </main>
     </div>
   )
+}
+
+const ChatPage = () => {
+  const [sharedReport, setSharedReport] = useState(readSharedReport)
+
+  useEffect(() => {
+    const handleHashChange = () => setSharedReport(readSharedReport())
+
+    window.addEventListener("hashchange", handleHashChange)
+    return () => window.removeEventListener("hashchange", handleHashChange)
+  }, [])
+
+  const exitSharedReport = () => {
+    clearShareHash()
+    setSharedReport({ status: "none" })
+  }
+
+  if (sharedReport.status !== "none") {
+    return <SharedReportPage report={sharedReport} onExit={exitSharedReport} />
+  }
+
+  return <ArenaPage />
 }
 
 export { ChatPage }

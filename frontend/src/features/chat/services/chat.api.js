@@ -1,7 +1,7 @@
   import axios from 'axios';
 
   const api = axios.create({
-    baseURL: "https://ai-battle-arena-4jxh.onrender.com/",
+    baseURL: import.meta.env.VITE_API_URL || "https://ai-battle-arena-4jxh.onrender.com",
     withCredentials: true,
   })
 

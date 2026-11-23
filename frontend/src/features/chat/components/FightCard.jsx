@@ -5,6 +5,7 @@ import {
   getBattleDate,
   getBattleOutcome,
 } from "../lib/battles"
+import { RecordStrip } from "./RecordStrip.jsx"
 
 const CloseIcon = () => (
   <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
@@ -79,6 +80,8 @@ const FightCard = ({
         <span>On the card</span>
         <span className="rail__count">{String(chats.length).padStart(2, "0")}</span>
       </div>
+
+      <RecordStrip chats={chats} />
 
       <div className="rail__scroll" ref={railScrollRef}>
         {chats.length === 0 ? (
