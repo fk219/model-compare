@@ -1,0 +1,27 @@
+name: Uptime
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the four production APIs
+        run: |
+          set -e
+          for url in \
+            "https://ai-battle-arena-4jxh.onrender.com/health" \
+            "https://perplexity-clone-7nda.onrender.com/" \
+            "https://insta-clone-backend-n518.onrender.com/" \
+            "https://moodify-backend-8rn5.onrender.com/"
+          do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 40 "$url")
+            echo "$url -> $code"
+            if [ "$code" != "200" ]; then
+              echo "::error::$url returned $code"
+              exit 1
+            fi
+          done
