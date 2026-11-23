@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import { MAX_PROMPT_LENGTH } from "../lib/limits"
+import { LegalLinks } from "../../legal/components/LegalLinks.jsx"
 
 const SendIcon = () => (
   <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false">
@@ -100,8 +101,8 @@ const Composer = ({
           </button>
         </form>
 
-        <p className="composer__hint" id="composer-hint">
-          <span>
+        <div className="composer__hint">
+          <span id="composer-hint">
             Enter to send · Shift + Enter for a new line
             {nearLimit ? (
               <span className={`composer__count${value.length >= 1900 ? " is-near" : ""}`}>
@@ -110,8 +111,11 @@ const Composer = ({
               </span>
             ) : null}
           </span>
-          <span className="composer__note">Bouts stay on this device</span>
-        </p>
+          <span className="composer__meta">
+            <span className="composer__note">Bouts stay on this device</span>
+            <LegalLinks />
+          </span>
+        </div>
       </div>
     </footer>
   )

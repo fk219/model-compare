@@ -1,11 +1,13 @@
-# AI Battle Arena
+# Model Arena
 
 Two language models answer the same prompt. A third model judges both answers, scores them out of ten, explains the scores, and declares a winner. Then you can share the scorecard, export it, or keep a running record of who wins your prompts.
 
 **Live app:** https://ai-battle-arena.furqankhan.dev
 **API:** https://ai-battle-arena-4jxh.onrender.com
 
-![AI Battle Arena](docs/preview.png)
+The repo folder and deployed URLs still use the original `ai-battle-arena` slug.
+
+![Model Arena](docs/preview.png)
 
 ![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)
@@ -97,7 +99,13 @@ frontend/
     lib/stats.js              Personal leaderboard aggregation
     lib/limits.js             Shared prompt-length constant
     services/chat.api.js      API client
+  src/features/legal/
+    page/                     Privacy and Terms pages
+    components/               Legal page shell and footer links
+  src/app/App.jsx             Arena, privacy, and terms path guard
   src/app/App.css             Design system and layout
+  public/robots.txt           Crawler rules and sitemap pointer
+  public/sitemap.xml          Home, privacy, and terms URLs
 ```
 
 ## Run locally

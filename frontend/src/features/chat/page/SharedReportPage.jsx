@@ -1,4 +1,5 @@
 import { BattleView } from "../components/BattleView.jsx"
+import { LegalLinks } from "../../legal/components/LegalLinks.jsx"
 
 const SharedReportPage = ({ report, onExit }) => {
   const isReady = report.status === "ok"
@@ -11,7 +12,7 @@ const SharedReportPage = ({ report, onExit }) => {
             <div className="marquee__masthead">
               <span className="report-chip">Shared report</span>
               <h1 className="wordmark">
-                AI Battle <span className="wordmark__hollow">Arena</span>
+                Model <span className="wordmark__hollow">Arena</span>
               </h1>
             </div>
           </div>
@@ -68,6 +69,10 @@ const SharedReportPage = ({ report, onExit }) => {
                 </button>
               </section>
             )}
+
+            <footer className="page-legal">
+              <LegalLinks />
+            </footer>
           </div>
         </div>
       </main>

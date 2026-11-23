@@ -37,7 +37,7 @@ export const buildReportMarkdown = (chat) => {
   const verdict = getVerdictLine(judge)
 
   const lines = [
-    "# AI Battle Arena: Bout report",
+    "# Model Arena: Bout report",
     "",
     `**Date:** ${formatBattleDate(getBattleDate(chat))}`,
     `**Winner:** ${winnerText(judge)}`,
@@ -69,7 +69,7 @@ export const buildReportMarkdown = (chat) => {
     "",
     "---",
     "",
-    "Generated from AI Battle Arena, a head-to-head model arena.",
+    "Generated from Model Arena, a head-to-head model arena.",
     "",
   ]
 
@@ -80,7 +80,7 @@ export const buildReportFilename = (chat) => {
   const date = getBattleDate(chat)
   const stamp = date ? date.toISOString().slice(0, 10) : "undated"
 
-  return `ai-battle-arena-${stamp}.md`
+  return `model-arena-${stamp}.md`
 }
 
 export const downloadBattleReport = (chat) => {

@@ -6,6 +6,7 @@ import {
   getBattleOutcome,
 } from "../lib/battles"
 import { RecordStrip } from "./RecordStrip.jsx"
+import { LegalLinks } from "../../legal/components/LegalLinks.jsx"
 
 const CloseIcon = () => (
   <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
@@ -129,6 +130,9 @@ const FightCard = ({
           </span>
         </button>
         <p className="rail__note">Bouts stay on this device</p>
+        <div className="rail__legal">
+          <LegalLinks />
+        </div>
       </div>
     </aside>
   )

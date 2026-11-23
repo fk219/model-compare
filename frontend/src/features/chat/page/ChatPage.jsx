@@ -211,7 +211,7 @@ const ArenaPage = () => {
                 )}
               </span>
               <h1 className="wordmark">
-                AI Battle <span className="wordmark__hollow">Arena</span>
+                Model <span className="wordmark__hollow">Arena</span>
               </h1>
             </div>
           </div>
