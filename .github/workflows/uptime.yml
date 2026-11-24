@@ -12,16 +12,24 @@ jobs:
       - name: Check the four production APIs
         run: |
           set -e
-          for url in \
-            "https://ai-battle-arena-4jxh.onrender.com/health" \
-            "https://perplexity-clone-7nda.onrender.com/" \
-            "https://insta-clone-backend-n518.onrender.com/" \
-            "https://moodify-backend-8rn5.onrender.com/"
-          do
-            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 40 "$url")
+          check() {
+            local url="$1"
+            local code
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 "$url" || true)
             echo "$url -> $code"
+            if [ "$code" != "200" ]; then
+              echo "Retrying after a possible cold start..."
+              sleep 20
+              code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 "$url" || true)
+              echo "$url -> $code"
+            fi
             if [ "$code" != "200" ]; then
               echo "::error::$url returned $code"
               exit 1
             fi
-          done
+          }
+
+          check "https://ai-battle-arena-4jxh.onrender.com/health"
+          check "https://perplexity-clone-7nda.onrender.com/"
+          check "https://insta-clone-backend-n518.onrender.com/"
+          check "https://moodify-backend-8rn5.onrender.com/"
