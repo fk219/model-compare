@@ -50,8 +50,8 @@ const TermsPage = () => (
         sources.
       </p>
       <p>
-        Cohere and Groq are third-party services. Their availability and terms are outside this
-        project's control.
+        OpenRouter, the selected model providers, Cohere, and Groq are third-party services. Their
+        availability and terms are outside this project's control.
       </p>
     </section>
 

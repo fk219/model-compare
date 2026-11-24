@@ -23,6 +23,7 @@ const Composer = ({
   error,
   onDismissError,
   inputRef,
+  sameModel = false,
 }) => {
   useEffect(() => {
     const field = inputRef.current
@@ -57,7 +58,7 @@ const Composer = ({
                 type="button"
                 className="alert__retry"
                 onClick={onSubmit}
-                disabled={loading || !value.trim()}
+                disabled={loading || !value.trim() || sameModel}
               >
                 Retry
               </button>
@@ -93,8 +94,14 @@ const Composer = ({
           <button
             type="submit"
             className="send-btn"
-            disabled={loading || !value.trim()}
-            aria-label={loading ? "Battle in progress" : "Send prompt"}
+            disabled={loading || !value.trim() || sameModel}
+            aria-label={
+              sameModel
+                ? "Pick two different fighters to send"
+                : loading
+                  ? "Battle in progress"
+                  : "Send prompt"
+            }
           >
             <span>{loading ? "Sending" : "Send"}</span>
             <SendIcon />

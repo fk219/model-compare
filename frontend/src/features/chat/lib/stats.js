@@ -14,32 +14,32 @@ const collectScore = (value, scores) => {
 export const computeArenaRecord = (chats = []) => {
   const record = {
     total: Array.isArray(chats) ? chats.length : 0,
-    cohereWins: 0,
-    groqWins: 0,
+    firstWins: 0,
+    secondWins: 0,
     ties: 0,
-    cohereAverage: null,
-    groqAverage: null,
+    firstAverage: null,
+    secondAverage: null,
   }
 
   if (!Array.isArray(chats)) return record
 
-  const cohereScores = []
-  const groqScores = []
+  const firstScores = []
+  const secondScores = []
 
   chats.forEach((chat) => {
     const judge = getResultMessage(chat)?.result?.judge
     if (!judge) return
 
-    if (judge.winner === "solution_1") record.cohereWins += 1
-    else if (judge.winner === "solution_2") record.groqWins += 1
+    if (judge.winner === "solution_1") record.firstWins += 1
+    else if (judge.winner === "solution_2") record.secondWins += 1
     else record.ties += 1
 
-    collectScore(judge.solution_1_score, cohereScores)
-    collectScore(judge.solution_2_score, groqScores)
+    collectScore(judge.solution_1_score, firstScores)
+    collectScore(judge.solution_2_score, secondScores)
   })
 
-  record.cohereAverage = average(cohereScores)
-  record.groqAverage = average(groqScores)
+  record.firstAverage = average(firstScores)
+  record.secondAverage = average(secondScores)
 
   return record
 }

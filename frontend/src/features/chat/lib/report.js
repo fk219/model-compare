@@ -1,6 +1,7 @@
 import {
   formatBattleDate,
   getBattleDate,
+  getBattleModelLabels,
   getResultMessage,
   getVerdictLine,
 } from "./battles"
@@ -10,9 +11,9 @@ const scoreText = (score) => {
   return Number.isFinite(numeric) ? String(numeric) : "–"
 }
 
-const winnerText = (judge) => {
-  if (judge?.winner === "solution_1") return "Cohere wins"
-  if (judge?.winner === "solution_2") return "Groq wins"
+const winnerText = (judge, labels) => {
+  if (judge?.winner === "solution_1") return `${labels.model1} wins`
+  if (judge?.winner === "solution_2") return `${labels.model2} wins`
   return "Draw"
 }
 
@@ -32,16 +33,17 @@ const feedbackBlock = (value) =>
 export const buildReportMarkdown = (chat) => {
   const result = getResultMessage(chat)?.result ?? {}
   const judge = result.judge ?? {}
+  const labels = getBattleModelLabels(result)
   const prompt =
     chat?.messages?.find((message) => message.role === "user")?.content ?? chat?.title ?? ""
-  const verdict = getVerdictLine(judge)
+  const verdict = getVerdictLine(judge, labels)
 
   const lines = [
     "# Model Arena: Bout report",
     "",
     `**Date:** ${formatBattleDate(getBattleDate(chat))}`,
-    `**Winner:** ${winnerText(judge)}`,
-    `**Scoreline:** Cohere ${scoreText(judge.solution_1_score)}/10 · Groq ${scoreText(judge.solution_2_score)}/10`,
+    `**Winner:** ${winnerText(judge, labels)}`,
+    `**Scoreline:** ${labels.model1} ${scoreText(judge.solution_1_score)}/10 · ${labels.model2} ${scoreText(judge.solution_2_score)}/10`,
     "",
     "## Prompt",
     "",
@@ -51,7 +53,7 @@ export const buildReportMarkdown = (chat) => {
     "",
     verdict ? `**${verdict.label}:** ${verdict.text}` : "_No verdict recorded._",
     "",
-    `## Cohere: ${scoreText(judge.solution_1_score)}/10`,
+    `## ${labels.model1}: ${scoreText(judge.solution_1_score)}/10`,
     "",
     answerBlock(result.solution_1),
     "",
@@ -59,7 +61,7 @@ export const buildReportMarkdown = (chat) => {
     "",
     feedbackBlock(judge.solution_1_feedback),
     "",
-    `## Groq: ${scoreText(judge.solution_2_score)}/10`,
+    `## ${labels.model2}: ${scoreText(judge.solution_2_score)}/10`,
     "",
     answerBlock(result.solution_2),
     "",

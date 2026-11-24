@@ -10,6 +10,13 @@ export type PromptValidation =
  */
 export const normalizePrompt = (prompt: string) => prompt.normalize("NFC").trim()
 
+/**
+ * Battle results depend on both the prompt and the fighter pair, so the cache
+ * key includes both model IDs. Order matters because corner A and B differ.
+ */
+export const buildBattleCacheKey = (prompt: string, modelA: string, modelB: string) =>
+  `${normalizePrompt(prompt)}::${modelA}::${modelB}`
+
 export const validatePrompt = (value: unknown): PromptValidation => {
   if (typeof value !== "string" || !value.trim()) {
     return {

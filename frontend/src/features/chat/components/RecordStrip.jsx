@@ -17,20 +17,20 @@ const RecordStrip = ({ chats }) => {
           <dd>{record.ties}</dd>
         </div>
         <div className="record__cell record__cell--red">
-          <dt>Cohere wins</dt>
-          <dd>{record.cohereWins}</dd>
+          <dt>Fighter A wins</dt>
+          <dd>{record.firstWins}</dd>
         </div>
         <div className="record__cell record__cell--blue">
-          <dt>Groq wins</dt>
-          <dd>{record.groqWins}</dd>
+          <dt>Fighter B wins</dt>
+          <dd>{record.secondWins}</dd>
         </div>
         <div className="record__cell">
-          <dt>Avg Cohere</dt>
-          <dd>{formatAverage(record.cohereAverage)}</dd>
+          <dt>Avg fighter A</dt>
+          <dd>{formatAverage(record.firstAverage)}</dd>
         </div>
         <div className="record__cell">
-          <dt>Avg Groq</dt>
-          <dd>{formatAverage(record.groqAverage)}</dd>
+          <dt>Avg fighter B</dt>
+          <dd>{formatAverage(record.secondAverage)}</dd>
         </div>
       </dl>
     </section>

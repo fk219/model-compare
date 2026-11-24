@@ -10,10 +10,14 @@ const PrivacyPage = () => (
     <section className="legal-section" aria-labelledby="privacy-handling">
       <h2 id="privacy-handling">What you send and who handles it</h2>
       <p>
-        Your prompt goes from the browser to the Model Arena API on Render. The API sends it to
-        Cohere and to Groq, and each provider writes one answer. Groq also runs the judge, which
-        reads the prompt, both answers, and returns scores and written reasoning. The result comes
-        back to your browser.
+        Your prompt goes from the browser to the Model Arena API on Render. The API sends it
+        through OpenRouter to the two fighters you select, and each model writes one answer. A
+        judge model also reads the prompt and both answers, then returns scores and written
+        reasoning. The result comes back to your browser.
+      </p>
+      <p>
+        If OpenRouter is not configured, the API falls back to Cohere for the red corner and Groq
+        for the blue corner, with Groq running the judge.
       </p>
       <p>
         Model and hosting providers process data under their own terms and privacy policies. Only
@@ -30,8 +34,8 @@ const PrivacyPage = () => (
       <p>Two things live in the API process memory while it runs:</p>
       <ul>
         <li>
-          A response cache of up to 100 entries for 30 minutes, keyed by the trimmed prompt, so a
-          repeated prompt can avoid another model call.
+          A response cache of up to 100 entries for 30 minutes, keyed by the trimmed prompt and
+          the fighter pair, so a repeated prompt on the same pair can avoid another model call.
         </li>
         <li>
           Per-IP rate-limit counters for 6 requests per minute and 40 requests per hour.
@@ -52,9 +56,13 @@ const PrivacyPage = () => (
       <h2 id="privacy-browser">What is stored in your browser</h2>
       <p>
         Battle history is saved in localStorage under the key{" "}
-        <code>ai-battle-arena:fight-card:v1</code>. It contains the prompt, both answers, scores,
-        judge feedback, winner, date, and the last active bout. The app reads it on load to restore
-        the fight card.
+        <code>ai-battle-arena:fight-card:v1</code>. It contains the prompt, model names, both
+        answers, scores, judge feedback, winner, date, and the last active bout. The app reads it
+        on load to restore the fight card.
+      </p>
+      <p>
+        Your fighter selection is saved under <code>ai-battle-arena:model-pair:v1</code> so the
+        next bout starts with the same pair.
       </p>
       <p>
         Shared reports are compressed into the URL after <code>#b=</code>. That data is not sent to
@@ -82,13 +90,18 @@ const PrivacyPage = () => (
       <ul>
         <li>Vercel: serves the web app and runs Web Analytics.</li>
         <li>Render: hosts the API.</li>
-        <li>Cohere: generates one answer for the red corner.</li>
-        <li>Groq: generates one answer for the blue corner and runs the judge.</li>
+        <li>OpenRouter: routes fighter and judge calls to the selected models.</li>
+        <li>
+          Model providers: OpenAI, Anthropic, Google, Meta, Mistral AI, and DeepSeek operate the
+          selectable models.
+        </li>
+        <li>Cohere and Groq: run the fallback fighters and the fallback judge.</li>
         <li>Google Fonts: serves the Anton, DM Mono, and Public Sans font files.</li>
       </ul>
       <p>
-        Prompts and answers reach Cohere and Groq as described above. Vercel and Google Fonts
-        receive normal web request data, not your prompt.
+        Prompts and answers reach OpenRouter and the selected model providers as described above.
+        In fallback mode they reach Cohere and Groq. Vercel and Google Fonts receive normal web
+        request data, not your prompt.
       </p>
     </section>
 

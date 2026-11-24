@@ -1,3 +1,5 @@
+import { FighterPicker } from "./FighterPicker.jsx"
+
 const STARTER_PROMPTS = [
   "Explain event delegation in JavaScript.",
   "Write a SQL query to find duplicate emails.",
@@ -13,7 +15,19 @@ const STEPS = [
   ["03", "Get the verdict", "The judge scores each answer."],
 ]
 
-const EmptyState = ({ chatCount, onPickPrompt }) => {
+const EmptyState = ({
+  chatCount,
+  onPickPrompt,
+  models,
+  modelA,
+  modelB,
+  onChangeModelA,
+  onChangeModelB,
+  modelALabel,
+  modelBLabel,
+  modelMode = "openrouter",
+  modelNotice = "",
+}) => {
   return (
     <section className="empty" aria-labelledby="empty-title">
       <p className="empty__eyebrow">{chatCount === 0 ? "First bout" : "Next bout"}</p>
@@ -25,9 +39,19 @@ const EmptyState = ({ chatCount, onPickPrompt }) => {
       </h2>
 
       <p className="empty__copy">
-        Cohere and Groq answer the same prompt. A judge scores both out of ten and calls
-        the winner. Every bout stays on your card.
+        {modelALabel} and {modelBLabel} answer the same prompt. A judge scores both out of
+        ten and calls the winner. Every bout stays on your card.
       </p>
+
+      <FighterPicker
+        models={models}
+        modelA={modelA}
+        modelB={modelB}
+        onChangeA={onChangeModelA}
+        onChangeB={onChangeModelB}
+        mode={modelMode}
+        notice={modelNotice}
+      />
 
       <div className="starters">
         <p className="starters__label">Start with a prompt</p>

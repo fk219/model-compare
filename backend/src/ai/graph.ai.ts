@@ -1,13 +1,35 @@
 import { StateGraph, StateSchema, START, END } from "@langchain/langgraph"
-import { groqModel, cohereModel } from "./models.ai.js"
-import { createAgent, HumanMessage, providerStrategy } from 'langchain'
+import { HumanMessage, SystemMessage } from "@langchain/core/messages"
+import { createAgent, providerStrategy } from "langchain"
 import { z } from "zod/v4"
+import {
+    createOpenRouterJudge,
+    createOpenRouterModel,
+    getFallbackFighters,
+    getFallbackJudge,
+    isOpenRouterEnabled,
+} from "./models.ai.js"
+import type { ModelPair } from "./models.js"
+import {
+    buildJudgeJsonPrompt,
+    buildJudgePrompt,
+    finalizeJudge,
+    judgeOutputSchema,
+    parseJudgeJson,
+    type JudgeInput,
+    type JudgeResult,
+} from "./judge.js"
 
 
 // Each field is written SEPARATELY (flat). No nested object with one big .default({})
 // because zod v4 + LangGraph break on that, and it was crashing the server (the 500 error).
 const state = new StateSchema({
     problem: z.string().default(""),
+    model_1_id: z.string().default(""),
+    model_2_id: z.string().default(""),
+    model_1: z.string().default(""),
+    model_2: z.string().default(""),
+    use_openrouter: z.boolean().default(false),
     solution_1: z.string().default(""),
     solution_2: z.string().default(""),
     solution_1_score: z.number().default(0),
@@ -19,6 +41,11 @@ const state = new StateSchema({
 
 type BattleState = {
     problem: string
+    model_1_id: string
+    model_2_id: string
+    model_1: string
+    model_2: string
+    use_openrouter: boolean
     solution_1: string
     solution_2: string
     solution_1_score: number
@@ -29,6 +56,8 @@ type BattleState = {
 }
 
 export type BattleResult = {
+    model_1: string
+    model_2: string
     solution_1: string
     solution_2: string
     judge: {
@@ -41,6 +70,19 @@ export type BattleResult = {
 }
 
 const solutionNode = async (state: BattleState) => {
+    if (state.use_openrouter) {
+        const [modelAResponse, modelBResponse] = await Promise.all([
+            createOpenRouterModel(state.model_1_id).invoke(state.problem),
+            createOpenRouterModel(state.model_2_id).invoke(state.problem),
+        ])
+
+        return {
+            solution_1: modelAResponse.text,
+            solution_2: modelBResponse.text,
+        }
+    }
+
+    const { cohereModel, groqModel } = getFallbackFighters()
     const [cohereResponse, groqResponse] = await Promise.all([
         cohereModel.invoke(state.problem),
         groqModel.invoke(state.problem),
@@ -52,13 +94,46 @@ const solutionNode = async (state: BattleState) => {
     }
 }
 
-const judgeNode = async (state: BattleState) => {
+const judgeWithOpenRouter = async (state: BattleState): Promise<JudgeResult> => {
+    const input: JudgeInput = {
+        problem: state.problem,
+        solution_1: state.solution_1,
+        solution_2: state.solution_2,
+        model_1: state.model_1,
+        model_2: state.model_2,
+    }
+    const judge = createOpenRouterJudge()
+
+    try {
+        const structuredJudge = judge.withStructuredOutput(judgeOutputSchema, {
+            name: "judge_verdict",
+        })
+        const verdict = await structuredJudge.invoke(buildJudgePrompt(input))
+
+        return finalizeJudge(judgeOutputSchema.parse(verdict))
+    } catch (error) {
+        // Some OpenRouter models reject response_format or tool calling, so the
+        // judge gets one more attempt as plain JSON before the bout fails.
+        console.warn("Structured judge output failed, retrying with JSON prompt:", error)
+
+        const response = await judge.invoke([
+            new SystemMessage(
+                "You are a fair judge of two model answers. Follow the requested output format exactly.",
+            ),
+            new HumanMessage(buildJudgeJsonPrompt(input)),
+        ])
+
+        return finalizeJudge(parseJudgeJson(response.text))
+    }
+}
+
+const judgeWithFallbackModels = async (state: BattleState) => {
     const { problem, solution_1, solution_2 } = state
 
     // NOTE: Groq is both a fighter AND the judge (its free tier is the most generous).
     // Gemini free tier dies after 20 req/min, Mistral was giving 429 too.
     const judge = createAgent({
-        model: groqModel,
+        model: getFallbackJudge(),
         responseFormat: providerStrategy(
             z.object({
                 solution_1_score: z.number().min(0).max(10),
@@ -101,6 +176,14 @@ const judgeNode = async (state: BattleState) => {
     }
 }
 
+const judgeNode = async (state: BattleState) => {
+    if (state.use_openrouter) {
+        return judgeWithOpenRouter(state)
+    }
+
+    return judgeWithFallbackModels(state)
+}
+
 const graph = new StateGraph(state)
     .addNode("solution", solutionNode)
     .addNode("judge_node", judgeNode)
@@ -110,13 +193,31 @@ const graph = new StateGraph(state)
     .compile()
 
 
-export default async function startGraph(problem: string): Promise<BattleResult> {
+export default async function startGraph(problem: string, pair: ModelPair): Promise<BattleResult> {
+    const useOpenRouter = isOpenRouterEnabled()
+
+    // Without an OpenRouter key the arena keeps its Cohere and Groq fighters.
+    // Labels report the models that actually answered, not the selector value.
+    const modelA = useOpenRouter
+        ? { id: pair.modelA.id, label: pair.modelA.label }
+        : { id: "cohere", label: "Cohere" }
+    const modelB = useOpenRouter
+        ? { id: pair.modelB.id, label: pair.modelB.label }
+        : { id: "groq", label: "Groq" }
+
     const response = await graph.invoke({
-        problem: problem
+        problem: problem,
+        model_1_id: modelA.id,
+        model_2_id: modelB.id,
+        model_1: modelA.label,
+        model_2: modelB.label,
+        use_openrouter: useOpenRouter,
     })
 
     // Frontend expects a `judge` object, so we build it back from the flat fields
     return {
+        model_1: response.model_1,
+        model_2: response.model_2,
         solution_1: response.solution_1,
         solution_2: response.solution_2,
         judge: {

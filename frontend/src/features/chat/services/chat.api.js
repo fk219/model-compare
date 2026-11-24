@@ -1,16 +1,23 @@
-  import axios from 'axios';
+import axios from "axios"
 
-  const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "https://ai-battle-arena-4jxh.onrender.com",
-    withCredentials: true,
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "https://ai-battle-arena-4jxh.onrender.com",
+  withCredentials: true,
+})
+
+const startBattle = async (problem, modelA, modelB) => {
+  const response = await api.post("/api/invoke", {
+    problem,
+    modelA,
+    modelB,
   })
 
-  const startBattle = async (problem) => {
-    const response = await api.post('/api/invoke', {
-      problem: problem
-    })
+  return response.data
+}
 
-    return response.data
-  }
+export const fetchModels = async () => {
+  const response = await api.get("/api/models")
+  return response.data
+}
 
 export default startBattle

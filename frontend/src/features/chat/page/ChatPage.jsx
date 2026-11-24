@@ -1,16 +1,27 @@
 import { useEffect, useRef, useState } from "react"
-import startBattle from "../services/chat.api"
+import startBattle, { fetchModels } from "../services/chat.api"
 import {
   describeBattleError,
   formatBoutNumber,
+  getBattleModelLabels,
+  getResultMessage,
   loadFightCard,
   saveFightCard,
 } from "../lib/battles"
 import { MAX_PROMPT_LENGTH } from "../lib/limits"
+import {
+  FALLBACK_FIGHTERS,
+  getModelLabel,
+  loadModelPair,
+  normalizeModels,
+  resolveModelPair,
+  saveModelPair,
+} from "../lib/models"
 import { clearShareHash, readSharedReport } from "../lib/share"
 import { BattleView } from "../components/BattleView.jsx"
 import { Composer } from "../components/Composer.jsx"
 import { EmptyState } from "../components/EmptyState.jsx"
+import { FighterPicker } from "../components/FighterPicker.jsx"
 import { FightCard } from "../components/FightCard.jsx"
 import { LiveBout } from "../components/LiveBout.jsx"
 import { SharedReportPage } from "./SharedReportPage.jsx"
@@ -39,6 +50,14 @@ const ArenaPage = () => {
   const [pendingProblem, setPendingProblem] = useState("")
   const [freshBattleId, setFreshBattleId] = useState(null)
 
+  const [models, setModels] = useState(FALLBACK_FIGHTERS)
+  const [modelMode, setModelMode] = useState("loading")
+  const [modelNotice, setModelNotice] = useState("")
+  const [modelSelection, setModelSelection] = useState(() =>
+    loadModelPair(FALLBACK_FIGHTERS),
+  )
+  const { modelA, modelB } = modelSelection
+
   const [railOpen, setRailOpen] = useState(false)
   const [isMobileRail, setIsMobileRail] = useState(
     () => window.matchMedia("(max-width: 900px)").matches,
@@ -53,6 +72,15 @@ const ArenaPage = () => {
   const activeIndex = activeChat
     ? chats.findIndex((chat) => chat.id === activeChat.id)
     : -1
+
+  const modelALabel = getModelLabel(models, modelA)
+  const modelBLabel = getModelLabel(models, modelB)
+  const sameModel = Boolean(modelA && modelB && modelA === modelB)
+  const activeResult =
+    !loading && activeChat ? getResultMessage(activeChat)?.result : null
+  const headerLabels = activeResult
+    ? getBattleModelLabels(activeResult)
+    : { model1: modelALabel, model2: modelBLabel }
 
   // ----- 2. HANDLERS -----------------------------------------------
 
@@ -77,9 +105,17 @@ const ArenaPage = () => {
     closeRail()
   }
 
+  const changeModelA = (id) => {
+    setModelSelection((current) => ({ ...current, modelA: id }))
+  }
+
+  const changeModelB = (id) => {
+    setModelSelection((current) => ({ ...current, modelB: id }))
+  }
+
   const handleSend = async () => {
     const problem = inputValue.trim()
-    if (!problem || loading) return
+    if (!problem || loading || sameModel) return
 
     if (problem.length > MAX_PROMPT_LENGTH) {
       setError(`Prompts are capped at ${MAX_PROMPT_LENGTH.toLocaleString("en-US")} characters. Trim it down and try again.`)
@@ -92,7 +128,7 @@ const ArenaPage = () => {
 
     try {
       setLoading(true)
-      const data = await startBattle(problem)
+      const data = await startBattle(problem, modelA, modelB)
       const chatId = Date.now().toString()
 
       setChats((currentChats) => [
@@ -128,6 +164,50 @@ const ArenaPage = () => {
   useEffect(() => {
     saveFightCard(chats, activeChatId)
   }, [chats, activeChatId])
+
+  useEffect(() => {
+    saveModelPair(modelA, modelB)
+  }, [modelA, modelB])
+
+  useEffect(() => {
+    let cancelled = false
+
+    fetchModels()
+      .then((data) => {
+        if (cancelled) return
+
+        const catalog = normalizeModels(data?.models)
+        if (catalog.length < 2) return
+
+        const defaults = resolveModelPair(data?.defaultPair, catalog)
+
+        setModels(catalog)
+        setModelMode(data?.mode === "fallback" ? "fallback" : "openrouter")
+        setModelNotice(typeof data?.notice === "string" ? data.notice : "")
+        setModelSelection((current) => {
+          const hasA = catalog.some((model) => model.id === current.modelA)
+          const hasB = catalog.some((model) => model.id === current.modelB)
+
+          return resolveModelPair(
+            {
+              modelA: hasA ? current.modelA : defaults.modelA,
+              modelB: hasB ? current.modelB : defaults.modelB,
+            },
+            catalog,
+          )
+        })
+      })
+      .catch((requestError) => {
+        console.warn("Could not load the fighter list:", requestError)
+        setModels(FALLBACK_FIGHTERS)
+        setModelMode("fallback")
+        setModelNotice("The fighter list could not load. The arena is using Cohere against Groq.")
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     const query = window.matchMedia("(max-width: 900px)")
@@ -219,11 +299,11 @@ const ArenaPage = () => {
           <div className="marquee__extras">
             <p className="matchup">
               <span className="matchup__dot matchup__dot--red" aria-hidden="true" />
-              Cohere
+              {headerLabels.model1}
               <span className="matchup__x" aria-hidden="true">
                 ×
               </span>
-              Groq
+              {headerLabels.model2}
               <span className="matchup__dot matchup__dot--blue" aria-hidden="true" />
             </p>
             <p className="marquee__kicker">Official judges' scorecard</p>
@@ -233,7 +313,11 @@ const ArenaPage = () => {
         <div className="stage__scroll" ref={scrollRef}>
           <div className="stage__inner">
             {loading ? (
-              <LiveBout problem={pendingProblem} />
+              <LiveBout
+                problem={pendingProblem}
+                modelA={modelALabel}
+                modelB={modelBLabel}
+              />
             ) : activeChat ? (
               <BattleView
                 chat={activeChat}
@@ -241,10 +325,40 @@ const ArenaPage = () => {
                 isFresh={activeChat.id === freshBattleId}
               />
             ) : (
-              <EmptyState chatCount={chats.length} onPickPrompt={pickPrompt} />
+              <EmptyState
+                chatCount={chats.length}
+                onPickPrompt={pickPrompt}
+                models={models}
+                modelA={modelA}
+                modelB={modelB}
+                onChangeModelA={changeModelA}
+                onChangeModelB={changeModelB}
+                modelALabel={modelALabel}
+                modelBLabel={modelBLabel}
+                modelMode={modelMode}
+                modelNotice={modelNotice}
+              />
             )}
           </div>
         </div>
+
+        {activeChat || loading ? (
+          <div className="prefight">
+            <div className="prefight__inner">
+              <FighterPicker
+                compact
+                models={models}
+                modelA={modelA}
+                modelB={modelB}
+                onChangeA={changeModelA}
+                onChangeB={changeModelB}
+                disabled={loading}
+                mode={modelMode}
+                notice={modelNotice}
+              />
+            </div>
+          </div>
+        ) : null}
 
         <Composer
           value={inputValue}
@@ -254,6 +368,7 @@ const ArenaPage = () => {
           error={error}
           onDismissError={() => setError(null)}
           inputRef={textareaRef}
+          sameModel={sameModel}
         />
       </main>
     </div>

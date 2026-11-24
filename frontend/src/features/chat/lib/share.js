@@ -2,7 +2,7 @@ import {
   compressToEncodedURIComponent,
   decompressFromEncodedURIComponent,
 } from "lz-string"
-import { getResultMessage } from "./battles"
+import { getBattleModelLabels, getResultMessage } from "./battles"
 
 export const MAX_ENCODED_SHARE_LENGTH = 16000
 
@@ -12,6 +12,7 @@ const MAX_DECOMPRESSED_LENGTH = 200000
 const MAX_PROMPT_LENGTH = 4000
 const MAX_ANSWER_LENGTH = 120000
 const MAX_FEEDBACK_LENGTH = 20000
+const MAX_MODEL_LABEL_LENGTH = 80
 
 export class ShareError extends Error {
   constructor(code, message) {
@@ -44,7 +45,9 @@ const exceedsFieldLimits = (payload) =>
   payload.a1.length > MAX_ANSWER_LENGTH ||
   payload.a2.length > MAX_ANSWER_LENGTH ||
   payload.f1.length > MAX_FEEDBACK_LENGTH ||
-  payload.f2.length > MAX_FEEDBACK_LENGTH
+  payload.f2.length > MAX_FEEDBACK_LENGTH ||
+  (typeof payload.m1 === "string" && payload.m1.length > MAX_MODEL_LABEL_LENGTH) ||
+  (typeof payload.m2 === "string" && payload.m2.length > MAX_MODEL_LABEL_LENGTH)
 
 const makePayload = (chat) => {
   const result = getResultMessage(chat)?.result
@@ -58,10 +61,13 @@ const makePayload = (chat) => {
     chat?.messages?.find((message) => message.role === "user")?.content ??
     chat?.title ??
     ""
+  const labels = getBattleModelLabels(result)
 
   const payload = {
     v: SHARE_VERSION,
     at: typeof chat?.createdAt === "string" ? chat.createdAt : null,
+    m1: labels.model1,
+    m2: labels.model2,
     prompt: typeof prompt === "string" ? prompt : "",
     a1: typeof result.solution_1 === "string" ? result.solution_1 : "",
     a2: typeof result.solution_2 === "string" ? result.solution_2 : "",
@@ -171,6 +177,8 @@ export const decodeBattle = (encoded) => {
       {
         id: "shared-report-result",
         result: {
+          model_1: typeof payload.m1 === "string" ? payload.m1 : undefined,
+          model_2: typeof payload.m2 === "string" ? payload.m2 : undefined,
           solution_1: payload.a1,
           solution_2: payload.a2,
           judge: {

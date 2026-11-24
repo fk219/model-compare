@@ -1,8 +1,12 @@
 import { BattleView } from "../components/BattleView.jsx"
+import { getBattleModelLabels, getResultMessage } from "../lib/battles"
 import { LegalLinks } from "../../legal/components/LegalLinks.jsx"
 
 const SharedReportPage = ({ report, onExit }) => {
   const isReady = report.status === "ok"
+  const battleLabels = getBattleModelLabels(
+    isReady ? getResultMessage(report.battle)?.result : undefined,
+  )
 
   return (
     <div className="arena arena--report">
@@ -20,11 +24,11 @@ const SharedReportPage = ({ report, onExit }) => {
           <div className="marquee__extras">
             <p className="matchup">
               <span className="matchup__dot matchup__dot--red" aria-hidden="true" />
-              Cohere
+              {battleLabels.model1}
               <span className="matchup__x" aria-hidden="true">
                 ×
               </span>
-              Groq
+              {battleLabels.model2}
               <span className="matchup__dot matchup__dot--blue" aria-hidden="true" />
             </p>
             <p className="marquee__kicker">Read-only judges' scorecard</p>

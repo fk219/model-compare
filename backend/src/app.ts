@@ -3,9 +3,10 @@ import cors from 'cors'
 import helmet from 'helmet'
 import compression from 'compression'
 import startGraph, { type BattleResult } from './ai/graph.ai.js'
+import { buildModelsResponse, resolveModelPair } from './ai/models.js'
 import { LruTtlCache } from './lib/lruCache.js'
 import { createInvokeLimiter } from './lib/rateLimit.js'
-import { validatePrompt } from './lib/prompt.js'
+import { buildBattleCacheKey, validatePrompt } from './lib/prompt.js'
 import { UpstreamTimeoutError, withTimeout } from './lib/timeout.js'
 
 const app = express()
@@ -52,8 +53,17 @@ app.get('/health', (_req, res) => {
     })
 })
 
+app.get('/api/models', (_req, res) => {
+    res.status(200).json(buildModelsResponse())
+})
+
 app.post('/api/invoke', perMinuteLimiter, perHourLimiter, async (req: Request, res: Response) => {
-    const validation = validatePrompt((req.body as { problem?: unknown } | undefined)?.problem)
+    const body = (req.body ?? {}) as {
+        problem?: unknown
+        modelA?: unknown
+        modelB?: unknown
+    }
+    const validation = validatePrompt(body.problem)
 
     if (!validation.ok) {
         return res.status(400).json({
@@ -62,7 +72,9 @@ app.post('/api/invoke', perMinuteLimiter, perHourLimiter, async (req: Request, r
         })
     }
 
-    const { prompt, cacheKey } = validation
+    const { prompt } = validation
+    const pair = resolveModelPair(body.modelA, body.modelB)
+    const cacheKey = buildBattleCacheKey(prompt, pair.modelA.id, pair.modelB.id)
     const cachedResult = battleCache.get(cacheKey)
 
     if (cachedResult) {
@@ -75,7 +87,7 @@ app.post('/api/invoke', perMinuteLimiter, perHourLimiter, async (req: Request, r
     }
 
     try {
-        const result = await withTimeout(startGraph(prompt), INVOKE_TIMEOUT_MS)
+        const result = await withTimeout(startGraph(prompt, pair), INVOKE_TIMEOUT_MS)
         battleCache.set(cacheKey, result)
 
         res.status(200).json({

@@ -3,6 +3,7 @@ import {
   formatBattleDate,
   formatScore,
   getBattleDate,
+  getBattleModelLabels,
   getCornerFeedback,
   getVerdictLine,
 } from "../lib/battles"
@@ -184,19 +185,24 @@ const BattleView = ({ chat, boutNumber, isFresh }) => {
 
   const { solution_1, solution_2 } = resultMessage.result
   const judge = resultMessage.result.judge ?? {}
+  const labels = getBattleModelLabels(resultMessage.result)
   const winner = judge.winner
   const isTie = winner !== "solution_1" && winner !== "solution_2"
   const winnerLabel =
-    winner === "solution_1" ? "Cohere wins" : winner === "solution_2" ? "Groq wins" : "Draw"
-  const verdictLine = getVerdictLine(judge)
-  const cohereFeedback = getCornerFeedback(judge, "solution_1")
-  const groqFeedback = getCornerFeedback(judge, "solution_2")
-  const hasEvidence = Boolean(cohereFeedback || groqFeedback)
+    winner === "solution_1"
+      ? `${labels.model1} wins`
+      : winner === "solution_2"
+        ? `${labels.model2} wins`
+        : "Draw"
+  const verdictLine = getVerdictLine(judge, labels)
+  const firstFeedback = getCornerFeedback(judge, "solution_1")
+  const secondFeedback = getCornerFeedback(judge, "solution_2")
+  const hasEvidence = Boolean(firstFeedback || secondFeedback)
 
   const corners = [
     {
       key: "solution_1",
-      name: "Cohere",
+      name: labels.model1,
       cornerLabel: "Red corner",
       tone: "red",
       text: solution_1,
@@ -205,7 +211,7 @@ const BattleView = ({ chat, boutNumber, isFresh }) => {
     },
     {
       key: "solution_2",
-      name: "Groq",
+      name: labels.model2,
       cornerLabel: "Blue corner",
       tone: "blue",
       text: solution_2,
@@ -313,12 +319,12 @@ const BattleView = ({ chat, boutNumber, isFresh }) => {
             <div
               className={`score score--red${corners[0].isWinner ? " is-winner" : ""}`}
             >
-              <span className="score__name">Cohere</span>
+              <span className="score__name">{labels.model1}</span>
               <span className="score__value">
                 <span aria-hidden="true">{formatScore(corners[0].score)}</span>
                 <small aria-hidden="true">/10</small>
                 <span className="sr-only">
-                  Cohere score {formatScore(corners[0].score)} out of 10
+                  {labels.model1} score {formatScore(corners[0].score)} out of 10
                 </span>
               </span>
             </div>
@@ -331,12 +337,12 @@ const BattleView = ({ chat, boutNumber, isFresh }) => {
             <div
               className={`score score--blue${corners[1].isWinner ? " is-winner" : ""}`}
             >
-              <span className="score__name">Groq</span>
+              <span className="score__name">{labels.model2}</span>
               <span className="score__value">
                 <span aria-hidden="true">{formatScore(corners[1].score)}</span>
                 <small aria-hidden="true">/10</small>
                 <span className="sr-only">
-                  Groq score {formatScore(corners[1].score)} out of 10
+                  {labels.model2} score {formatScore(corners[1].score)} out of 10
                 </span>
               </span>
             </div>
@@ -352,15 +358,15 @@ const BattleView = ({ chat, boutNumber, isFresh }) => {
           {hasEvidence ? (
             <div className="scorecard__notes" role="group" aria-label="Judge reasoning">
               <div className="scorecard__note scorecard__note--red">
-                <p className="scorecard__note-label">Judge on Cohere</p>
+                <p className="scorecard__note-label">Judge on {labels.model1}</p>
                 <p className="scorecard__note-text">
-                  {cohereFeedback || "No reasoning was returned for this corner."}
+                  {firstFeedback || "No reasoning was returned for this corner."}
                 </p>
               </div>
               <div className="scorecard__note scorecard__note--blue">
-                <p className="scorecard__note-label">Judge on Groq</p>
+                <p className="scorecard__note-label">Judge on {labels.model2}</p>
                 <p className="scorecard__note-text">
-                  {groqFeedback || "No reasoning was returned for this corner."}
+                  {secondFeedback || "No reasoning was returned for this corner."}
                 </p>
               </div>
             </div>

@@ -6,7 +6,7 @@ const Equalizer = () => (
   </span>
 )
 
-const LiveBout = ({ problem }) => {
+const LiveBout = ({ problem, modelA, modelB }) => {
   return (
     <section className="live-bout" role="status" aria-live="polite" aria-busy="true">
       <div className="live-bout__top">
@@ -23,7 +23,7 @@ const LiveBout = ({ problem }) => {
 
       <div className="live-bout__ring">
         <div className="live-corner live-corner--red">
-          <span className="live-corner__name">Cohere</span>
+          <span className="live-corner__name">{modelA}</span>
           <Equalizer />
           <span className="live-corner__state">Drafting</span>
         </div>
@@ -33,7 +33,7 @@ const LiveBout = ({ problem }) => {
         </span>
 
         <div className="live-corner live-corner--blue">
-          <span className="live-corner__name">Groq</span>
+          <span className="live-corner__name">{modelB}</span>
           <Equalizer />
           <span className="live-corner__state">Drafting</span>
         </div>

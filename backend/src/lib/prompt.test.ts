@@ -1,6 +1,11 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { MAX_PROMPT_LENGTH, normalizePrompt, validatePrompt } from "./prompt.js"
+import {
+  buildBattleCacheKey,
+  MAX_PROMPT_LENGTH,
+  normalizePrompt,
+  validatePrompt,
+} from "./prompt.js"
 
 test("rejects a missing, empty or non-string prompt", () => {
   for (const value of [undefined, null, "", "   ", 42, {}, []]) {
@@ -26,4 +31,12 @@ test("trims the prompt and uses a normalized cache key", () => {
   assert.equal(result.ok, true)
   assert.equal(result.prompt, "Explain indexes")
   assert.equal(result.cacheKey, normalizePrompt("Explain indexes"))
+})
+
+test("battle cache keys include the fighter pair", () => {
+  const base = buildBattleCacheKey("  Explain indexes  ", "model-a", "model-b")
+
+  assert.equal(base, `${normalizePrompt("Explain indexes")}::model-a::model-b`)
+  assert.notEqual(base, buildBattleCacheKey("Explain indexes", "model-a", "model-c"))
+  assert.notEqual(base, buildBattleCacheKey("Explain indexes", "model-b", "model-a"))
 })
