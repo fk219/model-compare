@@ -41,6 +41,18 @@ const FighterSelect = ({ id, label, value, models, onChange, disabled }) => (
   </div>
 )
 
+const FighterStatic = ({ label, value, models }) => {
+  const fighter = models.find((model) => model.id === value)
+  return (
+    <div className="fighter-field">
+      <span className="fighter-field__label">{label}</span>
+      <span className="fighter-field__static">
+        {fighter?.label ?? value}
+      </span>
+    </div>
+  )
+}
+
 const FighterPicker = ({
   models,
   modelA,
@@ -54,12 +66,13 @@ const FighterPicker = ({
 }) => {
   const id = useId()
   const isSameModel = Boolean(modelA && modelB && modelA === modelB)
+  const fallback = mode === "fallback"
   const locked = mode !== "openrouter"
   const statusText = notice || (mode === "loading" ? "Loading fighters." : "")
   const heading = compact
     ? "Next bout"
-    : mode === "fallback"
-      ? "Current fighters"
+    : fallback
+      ? "Demo fighters"
       : "Choose two fighters"
 
   return (
@@ -71,35 +84,45 @@ const FighterPicker = ({
         <p className="fighters__label">{heading}</p>
         {compact ? null : (
           <p className="fighters__hint">
-            {locked
-              ? "Model selection unlocks when the OpenRouter key is added."
-              : "One prompt, two models, one verdict."}
+            {fallback
+              ? "A fixed pair for the live demo."
+              : locked
+                ? "Loading the fighter catalog."
+                : "One prompt, two models, one verdict."}
           </p>
         )}
       </div>
 
       <div className="fighters__fields">
-        <FighterSelect
-          id={`${id}-a`}
-          label="Fighter A"
-          value={modelA}
-          models={models}
-          onChange={onChangeA}
-          disabled={disabled || locked}
-        />
+        {fallback ? (
+          <FighterStatic label="Fighter A" value={modelA} models={models} />
+        ) : (
+          <FighterSelect
+            id={`${id}-a`}
+            label="Fighter A"
+            value={modelA}
+            models={models}
+            onChange={onChangeA}
+            disabled={disabled || locked}
+          />
+        )}
 
         <span className="fighters__vs" aria-hidden="true">
           VS
         </span>
 
-        <FighterSelect
-          id={`${id}-b`}
-          label="Fighter B"
-          value={modelB}
-          models={models}
-          onChange={onChangeB}
-          disabled={disabled || locked}
-        />
+        {fallback ? (
+          <FighterStatic label="Fighter B" value={modelB} models={models} />
+        ) : (
+          <FighterSelect
+            id={`${id}-b`}
+            label="Fighter B"
+            value={modelB}
+            models={models}
+            onChange={onChangeB}
+            disabled={disabled || locked}
+          />
+        )}
       </div>
 
       {statusText ? (
