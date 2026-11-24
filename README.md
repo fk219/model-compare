@@ -8,6 +8,7 @@ Pick two language models. Both answer the same prompt. A judge scores each answe
 The repo folder and deployed URLs still use the original `ai-battle-arena` slug.
 
 ![Model Arena](docs/preview.png)
+![Model Arena judges' scorecard](docs/battle.png)
 
 ![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)
