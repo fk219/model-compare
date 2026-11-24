@@ -180,10 +180,17 @@ const ArenaPage = () => {
         if (catalog.length < 2) return
 
         const defaults = resolveModelPair(data?.defaultPair, catalog)
+        const fallbackMode = data?.mode === "fallback"
 
         setModels(catalog)
-        setModelMode(data?.mode === "fallback" ? "fallback" : "openrouter")
-        setModelNotice(typeof data?.notice === "string" ? data.notice : "")
+        setModelMode(fallbackMode ? "fallback" : "openrouter")
+        setModelNotice(
+          fallbackMode
+            ? ""
+            : typeof data?.notice === "string"
+              ? data.notice
+              : "",
+        )
         setModelSelection((current) => {
           const hasA = catalog.some((model) => model.id === current.modelA)
           const hasB = catalog.some((model) => model.id === current.modelB)
@@ -201,7 +208,7 @@ const ArenaPage = () => {
         console.warn("Could not load the fighter list:", requestError)
         setModels(FALLBACK_FIGHTERS)
         setModelMode("fallback")
-        setModelNotice("The fighter list could not load. The arena is using Cohere against Groq.")
+        setModelNotice("The arena is using its demo pair for this bout.")
       })
 
     return () => {
