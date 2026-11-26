@@ -1,6 +1,6 @@
 import { compactText } from "./text"
 
-const STORAGE_KEY = "ai-battle-arena:fight-card:v1"
+const STORAGE_KEY = "model-compare:fight-card:v1"
 
 const isStoredBattle = (battle) =>
   Boolean(battle) &&

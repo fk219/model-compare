@@ -56,12 +56,12 @@ const PrivacyPage = () => (
       <h2 id="privacy-browser">What is stored in your browser</h2>
       <p>
         Battle history is saved in localStorage under the key{" "}
-        <code>ai-battle-arena:fight-card:v1</code>. It contains the prompt, model names, both
+        <code>model-compare:fight-card:v1</code>. It contains the prompt, model names, both
         answers, scores, judge feedback, winner, date, and the last active bout. The app reads it
         on load to restore the fight card.
       </p>
       <p>
-        Your fighter selection is saved under <code>ai-battle-arena:model-pair:v1</code> so the
+        Your fighter selection is saved under <code>model-compare:model-pair:v1</code> so the
         next bout starts with the same pair.
       </p>
       <p>

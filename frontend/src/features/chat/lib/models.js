@@ -1,4 +1,4 @@
-const MODEL_PAIR_STORAGE_KEY = "ai-battle-arena:model-pair:v1"
+const MODEL_PAIR_STORAGE_KEY = "model-compare:model-pair:v1"
 
 export const FALLBACK_MODELS = Object.freeze([
   { id: "openai/gpt-4o-mini", label: "GPT-4o-mini", provider: "OpenAI" },
