@@ -3,9 +3,9 @@
 Pick two language models. Both answer the same prompt. A judge scores each answer out of ten, explains the scores, and declares a winner. Then you can share the scorecard, export it, or keep a running record of who wins your prompts.
 
 **Live app:** https://modelcompare.furqankhan.dev
-**API:** https://ai-battle-arena-4jxh.onrender.com
+**API:** https://model-compare-api.onrender.com
 
-The Render API keeps its original service URL; the product and frontend now use ModelCompare.
+The API runs on the replacement `model-compare-api` Render service.
 
 ![ModelCompare](docs/preview.png)
 ![ModelCompare judges' scorecard](docs/battle.png)

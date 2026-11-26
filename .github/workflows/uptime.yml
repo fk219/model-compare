@@ -29,7 +29,7 @@ jobs:
             fi
           }
 
-          check "https://ai-battle-arena-4jxh.onrender.com/health"
-          check "https://perplexity-clone-7nda.onrender.com/"
-          check "https://insta-clone-backend-n518.onrender.com/"
-          check "https://moodify-backend-8rn5.onrender.com/"
+          check "https://model-compare-api.onrender.com/health"
+          check "https://research-desk-api.onrender.com/"
+          check "https://photo-social-api.onrender.com/"
+          check "https://mood-music-api-akb5.onrender.com/"
