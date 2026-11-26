@@ -5,12 +5,12 @@ const TermsPage = () => (
     title="Terms"
     kicker="The short version"
     path="/terms"
-    summary="Model Arena is a beta demo for comparing two model answers on one prompt. These terms are short on purpose. By using the app, you agree to them."
+    summary="ModelCompare is a beta demo for comparing two model answers on one prompt. These terms are short on purpose. By using the app, you agree to them."
   >
     <section className="legal-section" aria-labelledby="terms-beta">
       <h2 id="terms-beta">Beta service</h2>
       <p>
-        Model Arena is provided for evaluation and demonstration. It can change, break, pause, or
+        ModelCompare is provided for evaluation and demonstration. It can change, break, pause, or
         shut down at any time. There is no service level agreement, and it should not be the only
         way you reach a model or make a production decision.
       </p>
@@ -18,7 +18,7 @@ const TermsPage = () => (
 
     <section className="legal-section" aria-labelledby="terms-use">
       <h2 id="terms-use">Acceptable use</h2>
-      <p>Do not use Model Arena to:</p>
+      <p>Do not use ModelCompare to:</p>
       <ul>
         <li>break the law, threaten or harass people, or distribute malware;</li>
         <li>infringe someone else's rights or bypass another service's protections;</li>
@@ -59,7 +59,7 @@ const TermsPage = () => (
       <h2 id="terms-content">Content</h2>
       <p>
         You keep the rights you have in the prompts you write. Model output is also subject to the
-        terms of the provider that generated it. Model Arena claims no ownership of your prompts or
+        terms of the provider that generated it. ModelCompare claims no ownership of your prompts or
         answers and keeps no server-side archive.
       </p>
       <p>
@@ -81,7 +81,7 @@ const TermsPage = () => (
       <h2 id="terms-changes">Changes to these terms</h2>
       <p>
         These terms may be updated as the app changes. The date at the top of the page will move
-        when they do. Continuing to use Model Arena after a change means you accept the updated
+        when they do. Continuing to use ModelCompare after a change means you accept the updated
         terms.
       </p>
     </section>

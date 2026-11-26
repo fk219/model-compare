@@ -5,12 +5,12 @@ const PrivacyPage = () => (
     title="Privacy"
     kicker="What happens to your prompts"
     path="/privacy"
-    summary="Model Arena is a small beta demo, not an account-based product. This page explains what a prompt touches, what stays in your browser, and which services handle data."
+    summary="ModelCompare is a small beta demo, not an account-based product. This page explains what a prompt touches, what stays in your browser, and which services handle data."
   >
     <section className="legal-section" aria-labelledby="privacy-handling">
       <h2 id="privacy-handling">What you send and who handles it</h2>
       <p>
-        Your prompt goes from the browser to the Model Arena API on Render. The API sends it
+        Your prompt goes from the browser to the ModelCompare API on Render. The API sends it
         through OpenRouter to the two fighters you select, and each model writes one answer. A
         judge model also reads the prompt and both answers, then returns scores and written
         reasoning. The result comes back to your browser.
@@ -47,7 +47,7 @@ const PrivacyPage = () => (
       </p>
       <p>
         Render and Vercel may keep standard infrastructure logs, such as IP address, user agent,
-        timestamp, and request path, under their own policies. Model Arena does not use those logs
+        timestamp, and request path, under their own policies. ModelCompare does not use those logs
         to build user profiles.
       </p>
     </section>
@@ -125,7 +125,7 @@ const PrivacyPage = () => (
         <li>Treat a share link as public to anyone who receives it.</li>
       </ul>
       <p>
-        You can use Model Arena without creating an account. There is nothing to delete
+        You can use ModelCompare without creating an account. There is nothing to delete
         server-side because no account or database record exists.
       </p>
     </section>

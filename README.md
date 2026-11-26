@@ -1,14 +1,14 @@
-# Model Arena
+# ModelCompare
 
 Pick two language models. Both answer the same prompt. A judge scores each answer out of ten, explains the scores, and declares a winner. Then you can share the scorecard, export it, or keep a running record of who wins your prompts.
 
-**Live app:** https://ai-battle-arena.furqankhan.dev
+**Live app:** https://modelcompare.furqankhan.dev
 **API:** https://ai-battle-arena-4jxh.onrender.com
 
-The repo folder and deployed URLs still use the original `ai-battle-arena` slug.
+The Render API keeps its original service URL; the product and frontend now use ModelCompare.
 
-![Model Arena](docs/preview.png)
-![Model Arena judges' scorecard](docs/battle.png)
+![ModelCompare](docs/preview.png)
+![ModelCompare judges' scorecard](docs/battle.png)
 
 ![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)
@@ -85,7 +85,7 @@ LangGraph StateGraph
   judge: { scores, feedback, winner } }
 ```
 
-The OpenRouter path uses `@langchain/openai`'s `ChatOpenAI` with `configuration.baseURL` set to `https://openrouter.ai/api/v1`. Attribution headers are sent on every call: `HTTP-Referer: https://ai-battle-arena.furqankhan.dev` and `X-Title: Model Arena`.
+The OpenRouter path uses `@langchain/openai`'s `ChatOpenAI` with `configuration.baseURL` set to `https://openrouter.ai/api/v1`. Attribution headers are sent on every call: `HTTP-Referer: https://modelcompare.furqankhan.dev` and `X-Title: ModelCompare`.
 
 The judge first tries `withStructuredOutput` with a zod schema. If the judge model rejects structured output or tool calling, the judge retries once with a JSON-only prompt, and the response is parsed defensively with zod. The winner is derived from the two scores, so the stored shape stays compatible with older reports.
 
@@ -162,8 +162,8 @@ Type-check the API with `npm run typecheck`. Test the API with `npm test`. Lint 
 | `PORT` | `3000` | API port (Render provides this in production) |
 | `OPENROUTER_API_KEY` | empty | Primary switch. When set, both fighters and the judge use OpenRouter |
 | `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1` | OpenRouter API base URL |
-| `OPENROUTER_HTTP_REFERER` | `https://ai-battle-arena.furqankhan.dev` | Attribution header sent to OpenRouter |
-| `OPENROUTER_APP_TITLE` | `Model Arena` | App title header sent to OpenRouter |
+| `OPENROUTER_HTTP_REFERER` | `https://modelcompare.furqankhan.dev` | Attribution header sent to OpenRouter |
+| `OPENROUTER_APP_TITLE` | `ModelCompare` | App title header sent to OpenRouter |
 | `COHERE_API_KEY` | empty | Fallback red corner when OpenRouter is not configured |
 | `GROQ_API_KEY` | empty | Fallback blue corner and fallback judge |
 | `GOOGLE_API_KEY` | empty | Optional Gemini client, not on the main path |
@@ -281,3 +281,7 @@ When the key is present, no Cohere or Groq request is made for a normal battle.
 - The client calls the Render API directly; CORS is restricted to the production domain plus localhost.
 - Rate limiting uses `trust proxy` set to 1 so the client IP comes from the hosting proxy.
 - `frontend/vercel.json` rewrites client routes to `index.html`. Share links use the URL hash, so no server route is needed.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

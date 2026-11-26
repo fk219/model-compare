@@ -3085,3 +3085,118 @@ svg {
     justify-content: center;
   }
 }
+
+/* ---------------------------------------------------------------- */
+/* Theme switch: light arena                                        */
+/* ---------------------------------------------------------------- */
+html[data-theme="light"] {
+  --ink: #f3f0e9;
+  --panel: #ffffff;
+  --panel-raised: #f8f5ee;
+  --chalk: #12151b;
+  --muted: #5f6672;
+  --muted-dim: #6f7682;
+  --red: #d92d20;
+  --blue: #2457e6;
+  --gold: #986a12;
+  --line: #d8d1c4;
+  --line-soft: #e8e2d7;
+  --theme-toggle-bottom: 88px;
+  color-scheme: light;
+}
+
+html[data-theme="light"] body {
+  background: var(--ink);
+  color: var(--chalk);
+}
+
+html[data-theme="light"] ::selection {
+  background: rgba(36, 87, 230, 0.2);
+}
+
+html[data-theme="light"] .rail,
+html[data-theme="light"] .fighters,
+html[data-theme="light"] .prompt-card,
+html[data-theme="light"] .live-bout {
+  background-color: #ffffff;
+  background-image: none;
+}
+
+html[data-theme="light"] .fighter-field__select,
+html[data-theme="light"] .fighter-field__static {
+  background-color: #ffffff;
+  border-color: var(--line);
+  color: var(--chalk);
+}
+
+html[data-theme="light"] .composer {
+  background: linear-gradient(180deg, #ffffff, #f3f0e9);
+}
+
+html[data-theme="light"] .composer__form {
+  background: #ffffff;
+  border-color: var(--line);
+}
+
+html[data-theme="light"] .send-btn {
+  color: var(--ink);
+}
+
+html[data-theme="light"] .answer__text {
+  color: var(--ink-soft);
+}
+
+html[data-theme="light"] .answer__code {
+  background: #f3f0e9;
+  color: var(--ink);
+}
+
+html[data-theme="light"] .copy-btn:hover,
+html[data-theme="light"] .rail__close:hover,
+html[data-theme="light"] .rail__list button:hover {
+  background: rgba(18, 21, 27, 0.05);
+}
+
+html[data-theme="light"] .wordmark__hollow,
+html[data-theme="light"] .empty__hollow {
+  -webkit-text-stroke-color: rgba(18, 21, 27, 0.74);
+}
+
+html[data-theme="light"] .marquee {
+  background: #ffffff;
+}
+
+html[data-theme="light"] .marquee__live {
+  border-color: rgba(18, 21, 27, 0.16);
+}
+
+html[data-theme="light"] .stage::before {
+  background-image:
+    linear-gradient(rgba(18, 21, 27, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 21, 27, 0.035) 1px, transparent 1px);
+}
+
+html[data-theme="light"] .record__cell {
+  background: #ffffff;
+}
+
+html[data-theme="light"] .bout-link:hover {
+  background: rgba(18, 21, 27, 0.04);
+}
+
+html[data-theme="light"] .bout-link.is-active {
+  background: #f3f0e9;
+}
+
+html[data-theme="light"] .btn-new {
+  border-color: var(--line);
+}
+
+html[data-theme="light"] .btn-new:hover:not(:disabled) {
+  background: rgba(18, 21, 27, 0.04);
+}
+
+html[data-theme="light"] .card-toggle {
+  background: #ffffff;
+  border-color: var(--line);
+}

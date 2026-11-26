@@ -1,6 +1,6 @@
-# Model Arena: web client
+# ModelCompare: web client
 
-React 19 + Vite front end for Model Arena (formerly AI Battle Arena). See the [root README](../README.md) for the product overview, API contract, limits, and sharing behavior.
+React 19 + Vite front end for ModelCompare (formerly ModelCompare). See the [root README](../README.md) for the product overview, API contract, limits, and sharing behavior.
 
 ```bash
 npm install

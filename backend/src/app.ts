@@ -14,7 +14,7 @@ const app = express()
 const allowedOrigins = (process.env.CORS_ORIGINS || [
     'http://localhost:5172',
     'http://localhost:5173',
-    'https://ai-battle-arena.furqankhan.dev'
+    'https://modelcompare.furqankhan.dev'
 ].join(','))
     .split(',')
     .map((origin) => origin.trim())

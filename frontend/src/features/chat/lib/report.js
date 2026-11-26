@@ -39,7 +39,7 @@ export const buildReportMarkdown = (chat) => {
   const verdict = getVerdictLine(judge, labels)
 
   const lines = [
-    "# Model Arena: Bout report",
+    "# ModelCompare: Bout report",
     "",
     `**Date:** ${formatBattleDate(getBattleDate(chat))}`,
     `**Winner:** ${winnerText(judge, labels)}`,
@@ -71,7 +71,7 @@ export const buildReportMarkdown = (chat) => {
     "",
     "---",
     "",
-    "Generated from Model Arena, a head-to-head model arena.",
+    "Generated from ModelCompare, a head-to-head model arena.",
     "",
   ]
 

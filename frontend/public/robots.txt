@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ai-battle-arena.furqankhan.dev/sitemap.xml
+Sitemap: https://modelcompare.furqankhan.dev/sitemap.xml

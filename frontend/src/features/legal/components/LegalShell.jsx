@@ -8,9 +8,9 @@ const LegalShell = ({ title, kicker, path, summary, children }) => {
     const ogUrl = document.head.querySelector('meta[property="og:url"]')
     const previousCanonical = canonical?.getAttribute("href")
     const previousOgUrl = ogUrl?.getAttribute("content")
-    const url = `https://ai-battle-arena.furqankhan.dev${path}`
+    const url = `https://modelcompare.furqankhan.dev${path}`
 
-    document.title = `${title}: Model Arena`
+    document.title = `${title}: ModelCompare`
     canonical?.setAttribute("href", url)
     ogUrl?.setAttribute("content", url)
 
